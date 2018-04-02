@@ -281,7 +281,6 @@ type DcosConfig struct {
 type OpenShiftConfig struct {
 	KubernetesConfig   *KubernetesConfig `json:"kubernetesConfig,omitempty"`
 	Location           string            `json:"location,omitempty"`
-	RouterIP           string            `json:"routerip,omitempty"`
 	ImageResourceGroup string            `json:"imageResourceGroup,omitempty"`
 	ImageName          string            `json:"imageName,omitempty"`
 }

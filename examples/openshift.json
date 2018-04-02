@@ -4,7 +4,6 @@
     "orchestratorProfile": {
       "orchestratorType": "OpenShift",
       "openShiftConfig": {
-        "routerip": "YOUR ROUTER IP"
       }
     },
     "masterProfile": {
@@ -14,8 +13,6 @@
       "imageResourceGroup": "YOUR IMAGE RESOURCE GROUP",
       "storageProfile": "ManagedDisks",
       "vmSize": "Standard_D4s_v3",
-      "firstConsecutiveStaticIP": "10.0.0.11",
-      "vnetSubnetId": "/subscriptions/YOUR SUBSCRIPTION/resourceGroups/YOUR RESOURCE GROUP/providers/Microsoft.Network/virtualNetworks/vnet/subnets/subnet"
     },
     "agentPoolProfiles": [
       {
@@ -26,7 +23,6 @@
         "name": "compute",
         "storageProfile": "ManagedDisks",
         "vmSize": "Standard_D4s_v3",
-        "vnetSubnetId": "/subscriptions/YOUR SUBSCRIPTION/resourceGroups/YOUR RESOURCE GROUP/providers/Microsoft.Network/virtualNetworks/vnet/subnets/subnet"
       },
       {
         "availabilityProfile": "AvailabilitySet",
@@ -37,7 +33,6 @@
         "name": "infra",
         "storageProfile": "ManagedDisks",
         "vmSize": "Standard_D4s_v3",
-        "vnetSubnetId": "/subscriptions/YOUR SUBSCRIPTION/resourceGroups/YOUR RESOURCE GROUP/providers/Microsoft.Network/virtualNetworks/vnet/subnets/subnet"
       }
     ],
     "linuxProfile": {

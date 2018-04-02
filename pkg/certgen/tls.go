@@ -315,14 +315,6 @@ func (c *Config) PrepareMasterCerts() error {
 			},
 		},
 		{
-			filename: "etc/origin/master/openshift-router",
-			template: &x509.Certificate{
-				Subject:     pkix.Name{CommonName: fmt.Sprintf("*.%s.nip.io", c.ExternalRouterIP.String())},
-				ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-				DNSNames:    []string{fmt.Sprintf("*.%s.nip.io", c.ExternalRouterIP.String()), fmt.Sprintf("%s.nip.io", c.ExternalRouterIP.String())},
-			},
-		},
-		{
 			filename: "etc/origin/master/node-bootstrapper",
 			template: &x509.Certificate{
 				Subject:     pkix.Name{CommonName: "system:serviceaccount:openshift-infra:node-bootstrapper"},

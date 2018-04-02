@@ -1,9 +1,27 @@
 {{if IsOpenShift}}
     {
+        "name": "router-ip",
+        "type": "Microsoft.Network/publicIPAddresses",
+        "apiVersion": "2017-08-01",
+        "location": "[variables('location')]",
+        "properties": {
+            "publicIPAllocationMethod": "Static",
+            "dnsSettings": {
+              "domainNameLabel": "[concat(variables('masterFqdnPrefix'), '-router')]"
+            }
+        },
+        "sku": {
+            "name": "Basic"
+        }
+    },
+    {
         "name": "router-lb",
         "type": "Microsoft.Network/loadBalancers",
         "apiVersion": "2017-10-01",
         "location": "[variables('location')]",
+        "dependsOn": [
+            "['Microsoft.Network/publicIPAddresses/router-ip']"
+        ],
         "properties": {
             "frontendIPConfigurations": [
                 {
@@ -188,7 +206,37 @@
               "sourcePortRange": "*"
             }
           },
-{{end}}       
+{{end}}
+{{if IsOpenShift}}
+          {
+            "name": "allow_http",
+            "properties": {
+              "access": "Allow",
+              "description": "Allow http traffic to infra nodes",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "80",
+              "direction": "Inbound",
+              "priority": 110,
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
+            }
+          },
+          {
+            "name": "allow_https",
+            "properties": {
+              "access": "Allow",
+              "description": "Allow https traffic to infra nodes",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "443",
+              "direction": "Inbound",
+              "priority": 111,
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
+            }
+          },
+{{end}}
           {
             "name": "allow_ssh",
             "properties": {

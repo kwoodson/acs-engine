@@ -180,7 +180,7 @@ projectConfig:
     mcsLabelsPerProject: 5
     uidAllocatorRange: 1000000000-1999999999/10000
 routingConfig:
-  subdomain: {{ .ExternalRouterIP }}.nip.io
+  subdomain: TEMPROUTERIP.nip.io
 serviceAccountConfig:
   limitSecretReferences: false
   managedNames:

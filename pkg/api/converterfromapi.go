@@ -650,7 +650,6 @@ func convertOpenShiftConfigToVLabs(api *OpenShiftConfig, vl *vlabs.OpenShiftConf
 	if api.KubernetesConfig != nil {
 		convertKubernetesConfigToVLabs(api.KubernetesConfig, vl.KubernetesConfig)
 	}
-	vl.RouterIP = api.RouterIP
 }
 
 func convertDcosConfigToVLabs(api *DcosConfig, vlabs *vlabs.DcosConfig) {

@@ -177,7 +177,6 @@ func TestConvertVLabsOrchestratorProfile(t *testing.T) {
 				OrchestratorProfile: &vlabs.OrchestratorProfile{
 					OrchestratorType: OpenShift,
 					OpenShiftConfig: &vlabs.OpenShiftConfig{
-						RouterIP: "def",
 						KubernetesConfig: &vlabs.KubernetesConfig{
 							NetworkPolicy:    "azure",
 							ContainerRuntime: "docker",
@@ -197,7 +196,6 @@ func TestConvertVLabsOrchestratorProfile(t *testing.T) {
 						NetworkPolicy:    "azure",
 						ContainerRuntime: "docker",
 					},
-					RouterIP: "def",
 				},
 			},
 		},

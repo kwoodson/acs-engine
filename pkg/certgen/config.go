@@ -12,7 +12,6 @@ import (
 
 // Config represents an OpenShift configuration
 type Config struct {
-	ExternalRouterIP       net.IP
 	ExternalMasterHostname string
 	serial                 serial
 	cas                    map[string]CertAndKey

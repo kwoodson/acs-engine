@@ -33,6 +33,13 @@ chown -R etcd:etcd /etc/etcd
 cp /etc/origin/node/ca.crt /etc/pki/ca-trust/source/anchors/openshift-ca.crt
 update-ca-trust
 
+###
+# retrieve the public ip via dns for the router public ip and sub it in for the routingConfig.subdomain
+###
+routerLBHost="{{.RouterLBHostname}}"
+routerLBIP=$(dig +short $routerLBHost)
+sed -i "s/TEMPROUTERIP/${routerLBIP}/" /etc/origin/master/master-config.yaml
+
 # TODO: when enabling secure registry, may need:
 # ln -s /etc/origin/node/node-client-ca.crt /etc/docker/certs.d/docker-registry.default.svc:5000
 

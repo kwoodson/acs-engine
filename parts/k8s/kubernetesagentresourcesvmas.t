@@ -31,6 +31,14 @@
               "subnet": {
                 "id": "[variables('{{$.Name}}VnetSubnetID')]"
               }
+{{if $.IsOpenShiftInfra }}
+              ,
+              "loadBalancerBackendAddressPools": [
+                {
+                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'router-lb'), '/backendAddressPools/backend')]"
+                }
+              ]
+{{end}}
             }
           }
           {{if lt $seq $.IPAddressCount}},{{end}}
