@@ -267,7 +267,8 @@ func (c *Config) WriteMasterKubeConfigs(fs filesystem.Filesystem) error {
 		if err != nil {
 			return err
 		}
-		err = fs.WriteFile(filename, b, 0600)
+		fi := GetFileInfo(filename)
+		err = fs.WriteFile(filename, b, fi)
 		if err != nil {
 			return err
 		}
@@ -282,5 +283,8 @@ func (c *Config) WriteBootstrapKubeConfig(fs filesystem.Filesystem) error {
 	if err != nil {
 		return err
 	}
-	return fs.WriteFile("etc/origin/node/bootstrap.kubeconfig", b, 0600)
+
+	fname := "etc/origin/node/bootstrap.kubeconfig"
+	fi := GetFileInfo(fname)
+	return fs.WriteFile(fname, b, fi)
 }

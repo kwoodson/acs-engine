@@ -7,11 +7,14 @@ import (
 	"net"
 	"sync"
 
+	"github.com/Azure/acs-engine/pkg/api"
+	tmpl "github.com/Azure/acs-engine/pkg/openshift/certgen/templates"
 	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 )
 
 // Config represents an OpenShift configuration
 type Config struct {
+	templates              templateInterface
 	ExternalMasterHostname string
 	serial                 serial
 	cas                    map[string]CertAndKey
@@ -22,6 +25,53 @@ type Config struct {
 	ClusterUsername        string
 	ClusterPassword        string
 	AzureConfig            AzureConfig
+}
+
+// TemplateInterface created to simplify testing
+type templateInterface interface {
+	AssetNames() []string
+	MustAsset(name string) []byte
+}
+
+type templates struct{}
+
+// AssetNames returns the template AssetNames
+func (templates) AssetNames() []string {
+	return tmpl.AssetNames()
+}
+
+// MustAsset returns the template MustAsset []byte
+func (templates) MustAsset(name string) []byte {
+	return tmpl.MustAsset(name)
+}
+
+var _ templateInterface = &templates{}
+
+// NewConfig returns a Config that holds Openshift data
+func NewConfig(a *api.Properties, masterHostname string, masterExternalHostname string) *Config {
+	c := &Config{
+		templates: templates{},
+		Master: &Master{
+			Hostname: masterHostname,
+			IPs: []net.IP{
+				net.ParseIP(a.MasterProfile.FirstConsecutiveStaticIP),
+			},
+			Port: 8443,
+		},
+		ExternalMasterHostname: masterExternalHostname,
+		ClusterUsername:        a.OrchestratorProfile.OpenShiftConfig.ClusterUsername,
+		ClusterPassword:        a.OrchestratorProfile.OpenShiftConfig.ClusterPassword,
+		AzureConfig: AzureConfig{
+			TenantID:        a.AzProfile.TenantID,
+			SubscriptionID:  a.AzProfile.SubscriptionID,
+			AADClientID:     a.ServicePrincipalProfile.ClientID,
+			AADClientSecret: a.ServicePrincipalProfile.Secret,
+			ResourceGroup:   a.AzProfile.ResourceGroup,
+			Location:        a.AzProfile.Location,
+		},
+	}
+
+	return c
 }
 
 // AzureConfig represents the azure.conf configuration

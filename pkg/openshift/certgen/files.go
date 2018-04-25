@@ -4,14 +4,53 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
+	"os"
 	"regexp"
 	"strings"
 	"text/template"
 
-	"github.com/Azure/acs-engine/pkg/openshift/certgen/templates"
+	templ "github.com/Azure/acs-engine/pkg/openshift/certgen/templates"
 	"github.com/Azure/acs-engine/pkg/openshift/filesystem"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type modeinfo struct {
+	path  *regexp.Regexp
+	mode  os.FileMode
+	user  string
+	group string
+}
+
+// These ownerships are processed in order
+var ownerships = []modeinfo{
+	{path: regexp.MustCompile("etc/etcd/.*\\.key$"), mode: 0600, user: "etcd", group: "etcd"},
+	{path: regexp.MustCompile("etc/etcd/.*$"), user: "etcd", group: "etcd"},
+	{path: regexp.MustCompile(".*\\.key"), mode: 0600},
+	{path: regexp.MustCompile("etc/origin/master/htpasswd$"), mode: 0600},
+}
+
+// GetFileInfo returns the permissions and ownership of the file if defined
+func GetFileInfo(filename string) filesystem.Fileinfo {
+	// If filename matches a specific path then set the correct User, Group, and Mode
+	f := filesystem.Fileinfo{User: "root", Group: "root", Mode: 0644}
+	for _, owner := range ownerships {
+
+		if owner.path.MatchString(filename) {
+			if owner.user != "" {
+				f.User = owner.user
+			}
+			if owner.group != "" {
+				f.Group = owner.group
+			}
+			if owner.mode != 0 {
+				f.Mode = owner.mode
+			}
+			break
+		}
+	}
+
+	return f
+}
 
 // PrepareMasterFiles creates the shared authentication and encryption secrets
 func (c *Config) PrepareMasterFiles() error {
@@ -33,11 +72,32 @@ func (c *Config) PrepareMasterFiles() error {
 
 // WriteMasterFiles writes the templated master config
 func (c *Config) WriteMasterFiles(fs filesystem.Filesystem) error {
-	for _, name := range templates.AssetNames() {
+
+	// create special case directories
+	var specialCaseDirs = map[string]filesystem.Fileinfo{}
+	specialCaseDirs["tmp"] = filesystem.Fileinfo{
+		User:  "root",
+		Group: "root",
+		Mode:  os.FileMode(01777),
+	}
+	specialCaseDirs["etc/etcd"] = filesystem.Fileinfo{
+		Mode:  os.FileMode(0755),
+		User:  "etcd",
+		Group: "etcd",
+	}
+
+	for na, fi := range specialCaseDirs {
+		err := fs.Mkdir(na, fi)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, name := range templ.AssetNames() {
 		if !strings.HasPrefix(name, "master/") {
 			continue
 		}
-		tb := templates.MustAsset(name)
+		tb := templ.MustAsset(name)
 
 		t, err := template.New("template").Funcs(template.FuncMap{
 			"QuoteMeta": regexp.QuoteMeta,
@@ -56,7 +116,10 @@ func (c *Config) WriteMasterFiles(fs filesystem.Filesystem) error {
 			return err
 		}
 
-		err = fs.WriteFile(strings.TrimPrefix(name, "master/"), b.Bytes(), 0644)
+		fname := strings.TrimPrefix(name, "master/")
+		fi := GetFileInfo(fname)
+
+		err = fs.WriteFile(fname, b.Bytes(), fi)
 		if err != nil {
 			return err
 		}
@@ -67,12 +130,12 @@ func (c *Config) WriteMasterFiles(fs filesystem.Filesystem) error {
 
 // WriteNodeFiles writes the templated node config
 func (c *Config) WriteNodeFiles(fs filesystem.Filesystem) error {
-	for _, name := range templates.AssetNames() {
+	for _, name := range templ.AssetNames() {
 		if !strings.HasPrefix(name, "node/") {
 			continue
 		}
 
-		tb := templates.MustAsset(name)
+		tb := templ.MustAsset(name)
 
 		t, err := template.New("template").Funcs(template.FuncMap{
 			"QuoteMeta": regexp.QuoteMeta,
@@ -87,7 +150,10 @@ func (c *Config) WriteNodeFiles(fs filesystem.Filesystem) error {
 			return err
 		}
 
-		err = fs.WriteFile(strings.TrimPrefix(name, "node/"), b.Bytes(), 0644)
+		fname := strings.TrimPrefix(name, "node/")
+		fi := GetFileInfo(fname)
+
+		err = fs.WriteFile(fname, b.Bytes(), fi)
 		if err != nil {
 			return err
 		}
